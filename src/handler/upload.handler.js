@@ -13,6 +13,9 @@ const storage = multer.diskStorage({
       case "data":
         dir += "/data";
         break;
+      case "csvdata":
+        dir += '/csv-data';
+        break;
     }
     cb(null, dir);
   },
@@ -26,6 +29,7 @@ const uploadHandler = upload.fields([
   { name: "image", maxCount: 1 },
   { name: "data", maxCount: 1 },
   { name: "font" },
+  { name: 'csvdata', maxCount: 1 }
 ]);
 
 module.exports = uploadHandler;

@@ -10,6 +10,7 @@ imageRouter.post(
     clearUploads("uploads/fonts");
     clearUploads("uploads/data");
     clearUploads("uploads/generated");
+    clearUploads('uploads/csv-data');
     next();
   },
   uploadHandler,
