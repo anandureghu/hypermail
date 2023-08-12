@@ -18,13 +18,15 @@ async function addTextsOnImage(data, baseImage, options) {
     if (text) {
       if (options.font.external) {
         options.font.fonts.forEach((fontData) => {
-          registerFont(getFontPath(fontData.fileName), {
+          registerFont(getFontPath(fontData.fileName.toLowerCase()), {
             family: fontData.family,
           });
         });
       }
 
-      const font = `${t.font.size} ${t.font.family || "sans-serif"}`;
+      const font = `${
+        t.font.size.includes("px") ? t.font.size : t.font.size + "px"
+      } ${t.font.family || "sans-serif"}`;
       ctx.font = font;
       ctx.fillStyle = t.font.color;
 
@@ -53,24 +55,48 @@ async function addTextsOnImage(data, baseImage, options) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
-  fileName = `${data.EMAIL}${options.file.index ? i++ : ""
-    }.${fileExtension}`;
-  const fileDir = `${dir}/${fileName}`;
-  fs.writeFileSync(fileDir, canvas.toBuffer());
+  fileName = `${data[options.file.nameKey]}${
+    options.file.index ? i++ : ""
+  }.${fileExtension}`;
+  let fileDir = `${dir}/${fileName}`;
+  try {
+    fs.writeFileSync(fileDir, canvas.toBuffer(), { flag: "wx" });
+  } catch (error) {
+    fileName = `${data[options.file.nameKey]}${
+      options.file.index ? i++ : ""
+    }${Date.now()}.${fileExtension}`;
+    fileDir = `${dir}/${fileName}`;
+    fs.writeFileSync(fileDir, canvas.toBuffer(), { flag: "wx" });
+  }
   return fileName;
 }
 
-const generateImage = async (options, req) => {
+const generateImage = async (options, req, demo) => {
   const baseImage = getBaseImage();
-  const csvData = await getCsvData();
+  let csvData = await getCsvData();
+  if (demo) {
+    var data = csvData[Math.floor(Math.random() * csvData.length)];
+    csvData = [data];
+  }
   const generatedImages = csvData.map(async (data) => {
     const file = await addTextsOnImage(data, baseImage, options);
     const fileLink = `${req.protocol}://${req.get("host")}/generated/${file}`;
-    return fileLink;
+    return {
+      file,
+      fileLink,
+      sending: true,
+      send: false,
+      id: data[options.file.nameKey],
+    };
   });
   const links = await Promise.all(generatedImages);
+  const newLinks = links.reduce((link, currentLink) => {
+    link[currentLink.id] = currentLink;
+    return link;
+  }, {});
   i = 0;
-  return links;
+  storeGeneratedFilesMetadata(newLinks);
+  return true;
 };
 
 const getBaseImage = () => {
@@ -86,5 +112,14 @@ const getFontPath = (fileName) => {
     .find((font) => font.includes(fileName.toLowerCase()));
   return path.join(dir, font);
 };
+
+function storeGeneratedFilesMetadata(metadata) {
+  const dirPath = "db/metadata";
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+  let jsonData = JSON.stringify(metadata, null, 2);
+  fs.writeFileSync(dirPath + "metadata.json", jsonData);
+}
 
 module.exports = { generateImage };
