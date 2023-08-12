@@ -17,18 +17,36 @@ const GenerateImage = async (req, res) => {
   const demo = req.query.demo === "true";
 
   try {
-    const generatedImages = await imageService.generateImage(options, req, demo);
-    if(generatedImages){
+    const generatedImages = await imageService.generateImage(
+      options,
+      req,
+      demo
+    );
+    if (generatedImages) {
       const response = new Response(
         httpStatus.CREATED,
         "images generated successfully",
         { generated: generatedImages }
       );
       res.status(response.code).send(response);
+    } else {
+      throw new Error("something happened please try again later");
     }
-    else{
-     throw new Error("something happened please try again later") 
-    }
+  } catch (error) {
+    logger.error(error);
+    res.status(500).send({});
+  }
+};
+
+const GetGeneratedImages = async (req, res) => {
+  try {
+    const generatedImages = imageService.getGeneratedImages();
+    const response = new Response(
+      httpStatus.CREATED,
+      "collected generated successfully",
+      generatedImages
+    );
+    res.status(response.code).send(response);
   } catch (error) {
     logger.error(error);
     res.status(500).send({});
@@ -38,4 +56,5 @@ const GenerateImage = async (req, res) => {
 module.exports = {
   GenerateImage,
   UploadFiles,
+  GetGeneratedImages,
 };

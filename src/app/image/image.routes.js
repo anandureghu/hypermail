@@ -17,5 +17,6 @@ imageRouter.post(
 );
 
 imageRouter.post("/generate", imageController.GenerateImage);
+imageRouter.get("/generated", imageController.GetGeneratedImages);
 
 module.exports = imageRouter;

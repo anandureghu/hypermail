@@ -3,6 +3,8 @@ const { createCanvas, loadImage, registerFont } = require("canvas");
 const path = require("path");
 const { getCsvData } = require("../../utils/readCsvData");
 
+let newLinks = {};
+
 let i = 1;
 async function addTextsOnImage(data, baseImage, options) {
   const fileExtension = baseImage.split(".").pop().toLowerCase();
@@ -90,12 +92,11 @@ const generateImage = async (options, req, demo) => {
     };
   });
   const links = await Promise.all(generatedImages);
-  const newLinks = links.reduce((link, currentLink) => {
+  newLinks = links.reduce((link, currentLink) => {
     link[currentLink.id] = currentLink;
     return link;
   }, {});
   i = 0;
-  storeGeneratedFilesMetadata(newLinks);
   return true;
 };
 
@@ -119,7 +120,13 @@ function storeGeneratedFilesMetadata(metadata) {
     fs.mkdirSync(dirPath, { recursive: true });
   }
   let jsonData = JSON.stringify(metadata, null, 2);
-  fs.writeFileSync(dirPath + "metadata.json", jsonData);
+  fs.writeFileSync(dirPath + "/metadata.json", jsonData);
 }
 
-module.exports = { generateImage };
+const getGeneratedImages = () => {
+  // const file = "db/metadata/metadata.json";
+  // const metadata = fs.readFileSync(file);
+  // const jsonData = JSON.parse(metadata);
+  return newLinks;
+};
+module.exports = { generateImage, getGeneratedImages };
