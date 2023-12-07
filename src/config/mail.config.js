@@ -1,6 +1,6 @@
-const { FROM, TO, NAME, SUBJECT, PASS } = process.env;
+const { FROM, PASS } = process.env;
 
 module.exports = {
-  from: FROM,
-  password: PASS,
+  from: FROM, // from mail that are planning to send
+  password: PASS, // app password generated (not real password!)
 };
