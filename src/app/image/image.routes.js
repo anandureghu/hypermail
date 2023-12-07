@@ -7,7 +7,7 @@ imageRouter.post(
   "/upload",
   (req, res, next) => {
     clearUploads("uploads/base");
-    clearUploads("uploads/fonts");
+    // clearUploads("uploads/fonts");
     clearUploads("uploads/data");
     clearUploads("uploads/generated");
     next();

@@ -16,13 +16,17 @@ async function addTextsOnImage(data, baseImage, options) {
   ctx.drawImage(image, 0, 0);
 
   options.texts.forEach((t) => {
+    console.log(t);
     const text = data[t.key];
     if (text) {
       if (options.font.external) {
         options.font.fonts.forEach((fontData) => {
-          registerFont(getFontPath(fontData.fileName.toLowerCase()), {
-            family: fontData.family,
-          });
+          registerFont(
+            getFontPath(fontData.fileName.toLowerCase().replace(" ", "-")),
+            {
+              family: fontData.family,
+            }
+          );
         });
       }
 
@@ -33,24 +37,24 @@ async function addTextsOnImage(data, baseImage, options) {
       ctx.fillStyle = t.font.color;
 
       const textDimen = ctx.measureText(text);
-      let xPos = t.position.x;
+      let xPos = parseInt(t.position.x);
       let max = t.position.max < 0 ? image.width : t.position.max;
       switch (t.font.align) {
         case "center":
-          xPos = t.position.x + (max - textDimen.width) / 2;
+          xPos = parseInt(t.position.x) + (max - textDimen.width) / 2;
           break;
         case "left":
-          xPos = t.position.x;
+          xPos = parseInt(t.position.x);
           break;
         case "right":
-          xPos = t.position.x + (max - textDimen.width);
+          xPos = parseInt(t.position.x) + (max - textDimen.width);
           break;
         default:
-          xPos = t.position.x;
+          xPos = parseInt(t.position.x);
           break;
       }
 
-      ctx.fillText(text, xPos, t.position.y, max);
+      ctx.fillText(text, xPos, parseInt(t.position.y), max);
     }
   });
   const dir = "uploads/generated";
@@ -87,7 +91,7 @@ const generateImage = async (options, req, demo) => {
       file,
       fileLink,
       sending: true,
-      send: false,
+      send: null,
       id: data[options.file.nameKey],
     };
   });
@@ -129,4 +133,4 @@ const getGeneratedImages = () => {
   // const jsonData = JSON.parse(metadata);
   return newLinks;
 };
-module.exports = { generateImage, getGeneratedImages };
+module.exports = { generateImage, getGeneratedImages, newLinks };
